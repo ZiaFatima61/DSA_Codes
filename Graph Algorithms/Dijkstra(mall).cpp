@@ -1,91 +1,76 @@
 #include <iostream>
-#include <vector>
-#include <string>
 using namespace std;
 
-#define MAX_LOCATIONS 100
+#define MAXN 100
 #define INF 999
 
-// Function to print the path using store names
-void printPath(int location, int previous[], vector<string>& names) {
-    if (previous[location] == location) {
-        cout << names[location];
-        return;
-    }
-    printPath(previous[location], previous, names);
-    cout << " -> " << names[location];
-}
-
 int main() {
-    int numLocations;
-    cout << "Enter the number of locations in the mall:\n";
-    cin >> numLocations;
+    int n;
+    cout << "Enter number of locations (stores / lifts / escalators): ";
+    cin >> n;
 
-    vector<string> locationNames(numLocations);
-    cout << "Enter the names of the locations (e.g., Entrance, Electronics, Food Court):\n";
-    cin.ignore(); // To ignore leftover newline
-    for (int i = 0; i < numLocations; i++) {
-        getline(cin, locationNames[i]);
-    }
+    int cost[MAXN][MAXN];
 
-    int distanceMatrix[MAX_LOCATIONS][MAX_LOCATIONS];
-    cout << "Enter the distance matrix (Enter 999 if locations are not directly connected):\n";
-    for (int i = 0; i < numLocations; i++) {
-        for (int j = 0; j < numLocations; j++) {
-            cin >> distanceMatrix[i][j];
+    cout << "Enter cost matrix (Enter 999 if no direct path)\n";
+    cout << "Cost includes distance + waiting time + convenience\n";
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cin >> cost[i][j];
         }
     }
 
-    int startLocation;
-    cout << "Enter the starting location index (0 to " << numLocations-1 << ", e.g., entrance):\n";
-    cin >> startLocation;
+    int source;
+    cout << "Enter source location: ";
+    cin >> source;
 
-    int shortestDistance[MAX_LOCATIONS], previous[MAX_LOCATIONS], visited[MAX_LOCATIONS];
+    int dist[MAXN], parent[MAXN], visited[MAXN];
 
-    // Initialize distances and visited
-    for (int i = 0; i < numLocations; i++) {
-        shortestDistance[i] = distanceMatrix[startLocation][i];
-        previous[i] = startLocation;
+    // Initialization
+    for (int i = 0; i < n; i++) {
+        dist[i] = cost[source][i];
+        parent[i] = source;
         visited[i] = 0;
     }
-    visited[startLocation] = 1;
-    previous[startLocation] = startLocation;
 
-    // Dijkstra algorithm
-    for (int iter = 0; iter < numLocations - 1; iter++) {
+    dist[source] = 0;
+    visited[source] = 1;
+    parent[source] = -1;
+
+    // Dijkstra’s Algorithm
+    for (int iter = 0; iter < n - 1; iter++) {
         int u = -1;
-        int minDistance = INF + 1;
+        int minDist = INF;
 
-        // Find the unvisited location with the smallest distance
-        for (int i = 0; i < numLocations; i++) {
-            if (!visited[i] && shortestDistance[i] < minDistance) {
-                minDistance = shortestDistance[i];
+        // Find unvisited node with minimum distance
+        for (int i = 0; i < n; i++) {
+            if (!visited[i] && dist[i] < minDist) {
+                minDist = dist[i];
                 u = i;
             }
         }
 
-        if (u == -1) break; // No reachable unvisited location
+        if (u == -1)
+            break;
+
         visited[u] = 1;
 
-        // Update distances for neighbors
-        for (int v = 0; v < numLocations; v++) {
-            if (!visited[v] && distanceMatrix[u][v] != INF) {
-                if (shortestDistance[u] + distanceMatrix[u][v] < shortestDistance[v]) {
-                    shortestDistance[v] = shortestDistance[u] + distanceMatrix[u][v];
-                    previous[v] = u;
+        // Update distances
+        for (int v = 0; v < n; v++) {
+            if (!visited[v] && cost[u][v] != INF) {
+                if (dist[u] + cost[u][v] < dist[v]) {
+                    dist[v] = dist[u] + cost[u][v];
+                    parent[v] = u;
                 }
             }
         }
     }
 
-    // Display shortest paths from entrance to each location
-    cout << "\nLocation          Distance from Entrance   Path\n";
-    for (int i = 0; i < numLocations; i++) {
-        cout << locationNames[i] << "          " << shortestDistance[i] << "                    ";
-        printPath(i, previous, locationNames);
-        cout << "\n";
+    // Output result
+    cout << "\nLocation   Minimum Cost   Previous Location\n";
+    for (int i = 0; i < n; i++) {
+        cout << i << "            " << dist[i] << "               " << parent[i] << "\n";
     }
 
     return 0;
 }
-
