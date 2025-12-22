@@ -70,7 +70,7 @@ public:
         Visit* temp = head;
         while (temp != NULL) {
             if (temp->hoursSpent >= 5) {
-                cout << "✔ " << temp->place << endl;
+                cout << " " << temp->place << endl;
             }
             temp = temp->next;
         }
